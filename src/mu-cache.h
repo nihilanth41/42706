@@ -38,19 +38,17 @@ Cache L1Cache; //need to use this in the simulator
 // So just decode and return 
 uint32_t cache_read_32(uint32_t addr) {
 	uint32_t index = (addr & 0x000000F0) >> 4;
-	uint32_t tag = (addr & 0xFFFFFF00) >> 8;
 	uint32_t word_offset = (addr & 0x0000000C) >> 2;
-	uint32_t byte_offset = (addr & 0x00000003);
 	return L1Cache.blocks[index].words[word_offset];
 }
 
 // Return true(1) if hit, false(0) if miss
 int cache_isHit(uint32_t addr) {
-	int i=0, j=0;
+	int i=0;
 	uint32_t index = (addr & 0x000000F0) >> 4;
 	uint32_t tag = (addr & 0xFFFFFF00) >> 8;
-	uint32_t word_offset = (addr & 0x0000000C) >> 2;
-	uint32_t byte_offset = (addr & 0x00000003);
+	//uint32_t word_offset = (addr & 0x0000000C) >> 2;
+	//uint32_t byte_offset = (addr & 0x00000003);
 	// Look for index in cache
 	for(i=0; i<NUM_CACHE_BLOCKS; i++) {
 		if( (L1Cache.blocks[index].tag == tag) && (1 == L1Cache.blocks[index].valid) ) // Tags match & Valid
@@ -58,11 +56,10 @@ int cache_isHit(uint32_t addr) {
 			cache_hits++;
 			return 1; // hit
 		}
-		else {
-			cache_misses++; 
-			return 0; // miss
-		}
+
 	}
+	cache_misses++; 
+	return 0; // miss
 }
 
 // Call this on cache *miss*, load cache line from addr, and return the appropriate word

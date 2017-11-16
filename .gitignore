@@ -1,0 +1,5 @@
+mu-mips
+*.swp
+*.swo
+*.bin
+*.DS_Store

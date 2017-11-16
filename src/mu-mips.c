@@ -2531,6 +2531,12 @@ void show_pipeline(){
 	printf("MEM_WB.LMD:%u\n", MEM_WB.LMD);
 	printf("MEM_WB.RegisterRd:%d\n\n", MEM_WB.RegisterRd);
 	printf("CYCLE %u\n", CYCLE_COUNT);
+	int total_accesses = cache_hits + cache_misses;
+	double hit_rate = cache_hits / total_accesses;
+	double miss_rate = 1 - hit_rate;
+	printf("Hit rate: %lf%%\n", hit_rate*100);
+	printf("Miss rate: %lf%%\n", miss_rate*100);
+	printf("Total Hit: %d\n Total Miss: %d\n Total Accesses: %d\n", cache_hits, cache_misses, total_accesses);
 }
 
 /***************************************************************/
@@ -2553,5 +2559,6 @@ int main(int argc, char *argv[]) {
 	while (1){
 		handle_command();
 	}
+
 	return 0;
 }
