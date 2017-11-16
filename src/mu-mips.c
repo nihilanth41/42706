@@ -997,22 +997,30 @@ void MEM()
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x20: //LB
-				MEM_WB.LMD = mem_read_32(EX_MEM.ALUOutput);
-				//MEM_WB.RegisterRd = rt;
+				 if(1 == cache_isHit(EX_MEM.ALUOutput)) {
+					MEM_WB.LMD = cache_read_32(EX_MEM.ALUOutput);
+				 }
+				 else { // Miss -- cache load loads into cache and returns correct word
+					MEM_WB.LMD = cache_load_32(EX_MEM.ALUOutput);
+				 }
 				MEM_WB.RegWrite = EX_MEM.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x21: //LH
-				MEM_WB.LMD = mem_read_32(EX_MEM.ALUOutput);
-				//MEM_WB.RegisterRd = rt;
+				 if(1 == cache_isHit(EX_MEM.ALUOutput)) {
+					MEM_WB.LMD = cache_read_32(EX_MEM.ALUOutput);
+				 }
+				 else { // Miss -- cache load loads into cache and returns correct word
+					MEM_WB.LMD = cache_load_32(EX_MEM.ALUOutput);
+				 }
 				MEM_WB.RegWrite = EX_MEM.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x23: //LW
-				MEM_WB.LMD = mem_read_32(EX_MEM.ALUOutput);
-				//MEM_WB.RegisterRd = rt;
-                //NEXT_STATE.REGS[rt] = MEM_WB.LMD;
-                //printf("RT: %u", MEM_WB.LMD);
+				 if(1 == cache_isHit(EX_MEM.ALUOutput)) {
+					MEM_WB.LMD = cache_read_32(EX_MEM.ALUOutput);
+				 }
+				 else { // Miss -- cache load loads into cache and returns correct word
+					MEM_WB.LMD = cache_load_32(EX_MEM.ALUOutput);
+				 }
 				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
@@ -2288,12 +2296,23 @@ void initialize() {
 	MEM_WB.FLAG = TRUE;
 	IF_EX.FLAG = TRUE;
 	ENABLE_FORWARDING = 0;
-	ForwardA = 00;
-	ForwardB = 00;
+	ForwardA = 0;
+	ForwardB = 0;
 	EX_MEM.forward = 0;
 	branch_taken = FALSE;
 	is_branch_jump = FALSE;
 	branch_not_taken = FALSE;
+	// Init cache to 0
+	cache_misses = 0;
+	cache_hits = 0;
+	int i=0, j=0;
+	for(i=0; i<NUM_CACHE_BLOCKS; i++) {
+		L1Cache.blocks[i].valid = 0;
+		L1Cache.blocks[i].tag = 0;
+		for(j=0; j<WORD_PER_BLOCK; j++) {
+			L1Cache.blocks[i].words[j] = 0;
+		}
+	}
 }
 
 /************************************************************/
