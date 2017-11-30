@@ -64,13 +64,18 @@ int cache_isHit(uint32_t addr) {
 
 // Call this on cache *miss*, load cache line from addr, and return the appropriate word
 uint32_t cache_load_32(uint32_t addr) { 
+	printf("Address: %u\n", addr);
 	uint32_t index = (addr & 0x000000F0) >> 4; // Block number
+	uint32_t tag = (addr & 0xFFFFFF00) >> 8;
 	uint32_t word_offset = (addr & 0x0000000C) >> 2;
 	int i=0;
 	for(i=0; i<WORD_PER_BLOCK; i++) {
 		uint32_t load_addr = (addr & 0xFFFFFFF0) + (i*4);
+		L1Cache.blocks[index].tag = tag;
+		L1Cache.blocks[index].valid = 1;
 		L1Cache.blocks[index].words[i] = mem_read_32(load_addr);
 	}
 	// Return word that resulted in cache miss
+	printf("Cache line: %8x\tindex: %u,\tword_offset: %u\n", L1Cache.blocks[index].words[word_offset], index, word_offset);
 	return L1Cache.blocks[index].words[word_offset];
 }
