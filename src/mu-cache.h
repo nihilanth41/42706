@@ -20,7 +20,8 @@ typedef struct Cache_Struct {
   
 } Cache;
 
-
+// Write buffer for store instructions
+uint32_t write_buffer[WORD_PER_BLOCK]; 
 
 /***************************************************************/
 /* CACHE STATS                                                 */
@@ -39,7 +40,9 @@ Cache L1Cache; //need to use this in the simulator
 uint32_t cache_read_32(uint32_t addr) {
 	uint32_t index = (addr & 0x000000F0) >> 4;
 	uint32_t word_offset = (addr & 0x0000000C) >> 2;
-	return L1Cache.blocks[index].words[word_offset];
+ 	uint32_t value = L1Cache.blocks[index].words[word_offset];
+	printf("Cache read index: %u\tword offset: %u\tvalue: %u\n", index, word_offset, value);
+	return value;
 }
 
 // Return true(1) if hit, false(0) if miss
@@ -53,12 +56,14 @@ int cache_isHit(uint32_t addr) {
 	for(i=0; i<NUM_CACHE_BLOCKS; i++) {
 		if( (L1Cache.blocks[index].tag == tag) && (1 == L1Cache.blocks[index].valid) ) // Tags match & Valid
 		{ 
+			printf("HIT!!!~!~!\n");
 			cache_hits++;
 			return 1; // hit
 		}
 
 	}
 	cache_misses++; 
+	printf("MISSSS!!!~!~!\n");
 	return 0; // miss
 }
 
@@ -78,4 +83,12 @@ uint32_t cache_load_32(uint32_t addr) {
 	// Return word that resulted in cache miss
 	printf("Cache line: %8x\tindex: %u,\tword_offset: %u\n", L1Cache.blocks[index].words[word_offset], index, word_offset);
 	return L1Cache.blocks[index].words[word_offset];
+}
+
+// This is to modify a single word in a cache block/line - for store instructions.
+void cache_write_32(uint32_t addr, uint32_t value) {
+	uint32_t index = (addr & 0x000000F0) >> 4;
+	uint32_t word_offset = (addr & 0x0000000C) >> 2;
+	L1Cache.blocks[index].words[word_offset] = value;
+	printf("Cache write index: %u\tword offset: %u\tvalue: %u\n", index, word_offset, value);
 }

@@ -1025,6 +1025,19 @@ void MEM()
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x28: //SB
+				if(1 == cache_isHit(EX_MEM.ALUOutput)) {
+					// Modify the word in the cache block 
+					// Then put the block in write-buffer
+					// Flush write-buffer to main memory
+					// Clear write-buffer
+				}
+				else {  // Cache miss
+					// Read whole cache block from main memory
+					// Modify the word in the cache block 
+					// Then put the block in write-buffer
+					// Flush write-buffer to main memory
+					// Clear write-buffer
+				}
 				data = mem_read_32( EX_MEM.ALUOutput);
 				data = (data & 0xFFFFFF00) | (EX_MEM.B & 0x000000FF);
 				mem_write_32(EX_MEM.ALUOutput, data);
@@ -1041,7 +1054,23 @@ void MEM()
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x2B: //SW
-				mem_write_32(EX_MEM.ALUOutput, EX_MEM.B);
+				if(0 == cache_isHit(EX_MEM.ALUOutput)) { // Cache miss
+					// Read whole cache block into main memory
+					uint32_t dummy = cache_load_32(EX_MEM.ALUOutput);
+				}
+				// Modify the word in the cache block 
+				cache_write_32(EX_MEM.ALUOutput, EX_MEM.B);
+				// Then put the block in write-buffer
+				uint32_t index = (EX_MEM.ALUOutput & 0x000000F0) >> 4; // Block number
+				int i=0;
+				for(i=0; i<WORD_PER_BLOCK; i++) {
+					write_buffer[i] = L1Cache.blocks[index].words[i];
+				}
+				// Write write-buffer to main-memory
+				for(i=0; i<WORD_PER_BLOCK; i++) {
+					uint32_t addr_tmp = (EX_MEM.ALUOutput & 0xFFFFFFF0);
+					mem_write_32(addr_tmp+(i*4), write_buffer[i]);
+				}
 				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//MEM_WB.RegisterRd = 0;
 				//print_instruction(CURRENT_STATE.PC);
